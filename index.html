@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Memogram - Générateur de description d'image</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background-color: #f0f0f0; }
+    .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input[type="file"] { margin-bottom: 10px; }
+    img { max-width: 100%; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    button { margin-top: 10px; padding: 10px 20px; background-color: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+    .description { margin-top: 20px; white-space: pre-wrap; background: #f9f9f9; padding: 10px; border-left: 4px solid #007BFF; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Memogram - Générateur de description d'image</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <br>
+    <img id="preview" src="" alt="Aperçu de l'image" style="display: none;">
+    <br>
+    <button id="sendButton">Générer la description</button>
+    <div class="description" id="description"></div>
+  </div>
+
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+    const sendButton = document.getElementById('sendButton');
+    const descriptionDiv = document.getElementById('description');
+    let selectedFile = null;
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files[0];
+      if (file) {
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = () => {
+          preview.src = reader.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    sendButton.addEventListener('click', () => {
+      if (!selectedFile) {
+        alert("Veuillez sélectionner une image.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+
+      fetch('/generate-description', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        descriptionDiv.textContent = data.description || "Aucune description reçue.";
+      })
+      .catch(error => {
+        console.error('Erreur:', error);
+        descriptionDiv.textContent = "Une erreur est survenue lors de la génération de la description.";
+      });
+    });
+  </script>
+</body>
+</html>
