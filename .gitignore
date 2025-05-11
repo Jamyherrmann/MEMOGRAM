@@ -1,5 +1,2 @@
-# Ignorer le fichier contenant le token
-GitToken.txt
-
 # Ignorer le fichier contenant la clé API
 .env
