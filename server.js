@@ -9,19 +9,40 @@ const path = require("path");
 const app = express();
 const port = 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.static(path.join(__dirname, "public"))); // Serve static files from 'public' directory
+// Liste blanche des domaines autorisés
+const allowedOrigins = ["https://memogram.ch", "http://localhost:3000", "https://memogram-tdas.onrender.com/"];
 
-// Multer setup for handling file uploads
+// Middleware CORS strict
+app.use(cors({
+  origin: function (origin, callback) {
+    // Autoriser les requêtes sans origine (ex: curl, serveur)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  }
+}));
+
+// Middleware supplémentaire pour bloquer côté serveur aussi
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (!origin || allowedOrigins.includes(origin)) {
+    next();
+  } else {
+    res.status(403).json({ error: "Access denied from this origin" });
+  }
+});
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
 const upload = multer({ dest: "uploads/" });
 
-// OpenAI configuration
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Route to serve the HTML file
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
