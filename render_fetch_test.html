@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Memogram Request</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    input, button, textarea {
+      display: block;
+      margin-top: 1rem;
+      padding: 0.5rem;
+      width: 100%;
+      max-width: 500px;
+    }
+    img {
+      max-width: 200px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test Memogram</h1>
+
+  <form id="uploadForm">
+    <label for="image">Image :</label>
+    <input type="file" id="image" name="image" accept="image/*" required />
+
+    <label for="person">Personne :</label>
+    <input type="text" id="person" name="person" value="quelqu’un" />
+
+    <label for="date">Date :</label>
+    <input type="text" id="date" name="date" value="13.7.2022" />
+
+    <label for="time">Heure :</label>
+    <input type="text" id="time" name="time" value="15:34" />
+
+    <label for="location">Lieu :</label>
+    <input type="text" id="location" name="location" value="Rue de Bernex 350, 1233 Bernex, Suisse" />
+
+    <label for="language">Langue :</label>
+    <input type="text" id="language" name="language" value="french" />
+
+    <button type="submit">Envoyer à GPT</button>
+  </form>
+
+  <div id="result">
+    <h2>Réponse :</h2>
+    <textarea id="output" rows="8" readonly></textarea>
+  </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const output = document.getElementById("output");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      const image = document.getElementById("image").files[0];
+      const person = document.getElementById("person").value;
+      const date = document.getElementById("date").value;
+      const time = document.getElementById("time").value;
+      const location = document.getElementById("location").value;
+      const language = document.getElementById("language").value;
+
+      if (!image) {
+        alert("Ajoute une image.");
+        return;
+      }
+
+      formData.append("image", image);
+      formData.append("person", person);
+      formData.append("pictureDate", date);
+      formData.append("pictureTime", time);
+      formData.append("pictureLocation", location);
+      formData.append("language", language);
+
+      try {
+        const response = await fetch("https://memogram-tdas.onrender.com/generate-description", {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (result.description) {
+          output.value = result.description;
+        } else {
+          output.value = "Erreur dans la réponse du serveur.";
+        }
+      } catch (err) {
+        console.error(err);
+        output.value = "Une erreur est survenue : " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
