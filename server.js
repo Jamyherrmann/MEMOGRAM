@@ -10,7 +10,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Liste blanche des domaines autorisés
-const allowedOrigins = ["https://memogram.ch", "http://localhost:3000"];
+const allowedOrigins = ["https://memogram.ch", "http://localhost:3000", "https://memogram-tdas.onrender.com", "null"];
 
 // Middleware CORS strict
 app.use(cors({
