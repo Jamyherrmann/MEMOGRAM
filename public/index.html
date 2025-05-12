@@ -1,70 +1,100 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Memogram - Générateur de description d'image</title>
+  <meta charset="UTF-8" />
+  <title>Test Memogram Request</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background-color: #f0f0f0; }
-    .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    input[type="file"] { margin-bottom: 10px; }
-    img { max-width: 100%; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; }
-    button { margin-top: 10px; padding: 10px 20px; background-color: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button:hover { background-color: #0056b3; }
-    .description { margin-top: 20px; white-space: pre-wrap; background: #f9f9f9; padding: 10px; border-left: 4px solid #007BFF; }
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    input, button, textarea {
+      display: block;
+      margin-top: 1rem;
+      padding: 0.5rem;
+      width: 100%;
+      max-width: 500px;
+    }
+    img {
+      max-width: 200px;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Memogram - Générateur de description d'image</h2>
-    <input type="file" id="imageInput" accept="image/*">
-    <br>
-    <img id="preview" src="" alt="Aperçu de l'image" style="display: none;">
-    <br>
-    <button id="sendButton">Générer la description</button>
-    <div class="description" id="description"></div>
+  <h1>Test Memogram</h1>
+
+  <form id="uploadForm">
+    <label for="image">Image :</label>
+    <input type="file" id="image" name="image" accept="image/*" required />
+
+    <label for="person">Personne :</label>
+    <input type="text" id="person" name="person" value="quelqu’un" />
+
+    <label for="date">Date :</label>
+    <input type="text" id="date" name="date" value="13.7.2022" />
+
+    <label for="time">Heure :</label>
+    <input type="text" id="time" name="time" value="15:34" />
+
+    <label for="location">Lieu :</label>
+    <input type="text" id="location" name="location" value="Rue de Bernex 350, 1233 Bernex, Suisse" />
+
+    <label for="language">Langue :</label>
+    <input type="text" id="language" name="language" value="french" />
+
+    <button type="submit">Envoyer à GPT</button>
+  </form>
+
+  <div id="result">
+    <h2>Réponse :</h2>
+    <textarea id="output" rows="8" readonly></textarea>
   </div>
 
   <script>
-    const imageInput = document.getElementById('imageInput');
-    const preview = document.getElementById('preview');
-    const sendButton = document.getElementById('sendButton');
-    const descriptionDiv = document.getElementById('description');
-    let selectedFile = null;
+    const form = document.getElementById("uploadForm");
+    const output = document.getElementById("output");
 
-    imageInput.addEventListener('change', () => {
-      const file = imageInput.files[0];
-      if (file) {
-        selectedFile = file;
-        const reader = new FileReader();
-        reader.onload = () => {
-          preview.src = reader.result;
-          preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    sendButton.addEventListener('click', () => {
-      if (!selectedFile) {
-        alert("Veuillez sélectionner une image.");
+      const formData = new FormData();
+      const image = document.getElementById("image").files[0];
+      const person = document.getElementById("person").value;
+      const date = document.getElementById("date").value;
+      const time = document.getElementById("time").value;
+      const location = document.getElementById("location").value;
+      const language = document.getElementById("language").value;
+
+      if (!image) {
+        alert("Ajoute une image.");
         return;
       }
 
-      const formData = new FormData();
-      formData.append('image', selectedFile);
+      formData.append("image", image);
+      formData.append("person", person);
+      formData.append("pictureDate", date);
+      formData.append("pictureTime", time);
+      formData.append("pictureLocation", location);
+      formData.append("language", language);
 
-      fetch('/generate-description', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        descriptionDiv.textContent = data.description || "Aucune description reçue.";
-      })
-      .catch(error => {
-        console.error('Erreur:', error);
-        descriptionDiv.textContent = "Une erreur est survenue lors de la génération de la description.";
-      });
+      try {
+        const response = await fetch("https://memogram-tdas.onrender.com/generate-description", {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (result.description) {
+          output.value = result.description;
+        } else {
+          output.value = "Erreur dans la réponse du serveur.";
+        }
+      } catch (err) {
+        console.error(err);
+        output.value = "Une erreur est survenue : " + err.message;
+      }
     });
   </script>
 </body>
