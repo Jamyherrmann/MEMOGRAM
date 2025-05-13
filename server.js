@@ -18,7 +18,9 @@ const allowedOrigins = [
 ];
 
 // CORS permissif
-app.use(cors());
+app.use(cors({
+  origin: ['https://memogram.ch', 'http://localhost:3000', 'https://memogram-tdas.onrender.com', 'http://127.0.0.1:8081', 'http://127.0.0.1:8080','https://memogram.ch/app'],
+}));
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
