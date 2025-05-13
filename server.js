@@ -54,7 +54,12 @@ app.post("/generate-description", upload.single("image"), async (req, res) => {
     const mimeType = "image/jpeg";
 
     // 🧠 Prompt optimisé (plus court mais expressif)
-    const prompt = `Describe visually this image as if it was taken by ${person}, incorporating sensory details and emotions based on the image, such as its layout, colors, shapes, actions, details, and ambiance. Avoid adding details not present in the image. Be precise while maintaining an organic and human feel. Someone who hasn't seen this image should be able to imagine it vividly. Naturally embed information such as the date "${pictureDate}", time "${pictureTime}", and location "${pictureLocation}" into your narrative in a fluid and organic way. Avoid using negations; If something can't be described, simply omit it or find an alternative way to convey the essence. If there are persons, don't hesitate to describe them physically and identify age/gender impression. Do not mention directly that it's a picture or photo. Vary sentence structures and phrasing. Limit your response to 500 characters. Respond in ${language}. If you really can't describe it in any other way just respond by explaining why you can't with this photo and nothing else.`;
+    const prompt = `You are a perceptive narrator witnessing this scene as if through the eyes of ${person}. Describe what is clearly visible: layout, colors, objects, physical actions, emotional atmosphere, and human presence. If there are people, focus on: their physical appearance, estimated age range, gender impression, body language, and emotional expressions. Describe what is happening, as clearly and naturally as possible, based only on the visible. Don't also forget to explain details and what is happening in the background.
+
+    If something is ambiguous or sensitive, describe its visual effect, atmosphere, or implied meaning without speculating or labeling. Do not use negations or mention limitations. Reframe or omit discreetly.
+    
+    Naturally weave in the context of the date "${pictureDate}", time "${pictureTime}", and location "${pictureLocation}" as part of the scene. Do not mention that this is an image or photo. Vary sentence structure. Limit the response to 500 characters. Respond only in ${language}. Always produce a description — reinterpret rather than refuse.`;
+    
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
