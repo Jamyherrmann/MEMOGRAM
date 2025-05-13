@@ -17,7 +17,7 @@ const allowedOrigins = [
   "null",
 ];
 
-// ✅ Et remplacer par ce CORS permissif :
+// CORS permissif
 app.use(cors());
 
 app.use(express.json());
@@ -37,14 +37,14 @@ app.post("/generate-description", upload.single("image"), async (req, res) => {
       return res.status(400).json({ error: "No image uploaded" });
     }
 
-    const { pictureDate, pictureTime, pictureLocation, language, person } = req.body;
-    if (!pictureDate || !pictureTime || !pictureLocation || !language || !person) {
-      return res.status(400).json({ error: "Missing required metadata" });
+    const { prompt, language } = req.body;
+
+    if (!prompt || !language) {
+      return res.status(400).json({ error: "Missing prompt or language" });
     }
 
     const imagePath = path.join(__dirname, req.file.path);
 
-    // 🔧 Resize and compress image
     const resizedBuffer = await sharp(imagePath)
       .resize({ width: 800 })
       .jpeg({ quality: 70 })
@@ -52,14 +52,6 @@ app.post("/generate-description", upload.single("image"), async (req, res) => {
 
     const base64Image = resizedBuffer.toString("base64");
     const mimeType = "image/jpeg";
-
-    // 🧠 Prompt optimisé (plus court mais expressif)
-    const prompt = `You are a perceptive narrator witnessing this scene as if through the eyes of ${person}. Describe what is clearly visible: layout, colors, objects, physical actions, emotional atmosphere, and human presence. If there are people, focus on: their physical appearance, estimated age range, gender impression, body language, and emotional expressions. Describe what is happening, as clearly and naturally as possible, based only on the visible. Don't also forget to explain details and what is happening in the background.
-
-    If something is ambiguous or sensitive, describe its visual effect, atmosphere, or implied meaning without speculating or labeling. Do not use negations or mention limitations. Reframe or omit discreetly.
-    
-    Naturally weave in the context of the date "${pictureDate}", time "${pictureTime}", and location "${pictureLocation}" as part of the scene. Do not mention that this is an image or photo. Vary sentence structure. Limit the response to 500 characters. Respond only in ${language}. Always produce a description — reinterpret rather than refuse.`;
-    
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -83,7 +75,7 @@ app.post("/generate-description", upload.single("image"), async (req, res) => {
     const result = response.choices[0].message.content;
     res.json({ description: result });
 
-    fs.unlinkSync(imagePath); // Supprimer le fichier temporaire
+    fs.unlinkSync(imagePath); // Clean up temp file
   } catch (err) {
     console.error("API Error:", err);
     res.status(500).json({ error: "Error generating the description." });
